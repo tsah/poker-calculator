@@ -1,6 +1,7 @@
 export enum SettlementReason {
   HOUSE_FEE = "house_fee",
   GAME_BALANCE = "game_balance",
+  SHARED_EXPENSE = "shared_expense"
 }
 
 export interface SettlementBreakdown {
@@ -28,4 +29,5 @@ export interface Player {
   buyIn: number;
   cashOut: number;
   isHouse?: boolean;
+  expenses?: number;
 }

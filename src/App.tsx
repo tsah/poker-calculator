@@ -9,7 +9,8 @@ function App() {
     name: '',
     buyIn: 0,
     cashOut: 0,
-    isHouse: false
+    isHouse: false,
+    expenses: 0
   })
   const [houseFee, setHouseFee] = useState(0)
   const [settlements, setSettlements] = useState<CombinedSettlement[]>([])
@@ -22,7 +23,8 @@ function App() {
       name: '',
       buyIn: 0,
       cashOut: 0,
-      isHouse: false
+      isHouse: false,
+      expenses: 0
     })
     setSettlements([]) // Reset settlements when adding a new player
   }
@@ -36,12 +38,14 @@ function App() {
     setSettlements(calculateSettlements(players, houseFee))
   }
 
-  const getBreakdownText = (reason: 'house_fee' | 'game_balance') => {
+  const getBreakdownText = (reason: 'house_fee' | 'game_balance' | 'shared_expense') => {
     switch (reason) {
       case 'house_fee':
         return 'עמלת בית'
       case 'game_balance':
         return 'רווח/הפסד'
+      case 'shared_expense':
+        return 'הוצאות משותפות'
       default:
         return ''
     }
@@ -92,8 +96,15 @@ function App() {
               type="number"
               placeholder="יציאה"
               className="flex-1 min-w-[150px] p-2 rounded bg-[#0c231c] border border-[#ffd700]/20 text-white placeholder-gray-400 focus:outline-none focus:border-[#ffd700]"
-              value={newPlayer.cashOut}
+              value={newPlayer.cashOut || ''}
               onChange={(e) => setNewPlayer({ ...newPlayer, cashOut: Number(e.target.value) })}
+            />
+            <input
+              type="number"
+              placeholder="הוצאות משותפות"
+              className="flex-1 min-w-[150px] p-2 rounded bg-[#0c231c] border border-[#ffd700]/20 text-white placeholder-gray-400 focus:outline-none focus:border-[#ffd700]"
+              value={newPlayer.expenses || ''}
+              onChange={(e) => setNewPlayer({ ...newPlayer, expenses: Number(e.target.value) })}
             />
             <div className="flex items-center gap-2">
               <input
@@ -125,6 +136,7 @@ function App() {
                   <th className="text-right p-2 text-[#ffd700]">קנייה</th>
                   <th className="text-right p-2 text-[#ffd700]">יציאה</th>
                   <th className="text-right p-2 text-[#ffd700]">נטו</th>
+                  <th className="text-right p-2 text-[#ffd700]">הוצאות</th>
                   <th className="text-right p-2 text-[#ffd700]">פוג</th>
                   <th className="text-right p-2 text-[#ffd700]">פעולה</th>
                 </tr>
@@ -140,6 +152,7 @@ function App() {
                         ₪{(player.cashOut - player.buyIn).toFixed(2)}
                       </span>
                     </td>
+                    <td className="p-2 text-white">₪{player.expenses || 0}</td>
                     <td className="p-2 text-white">
                       {player.isHouse ? 'שחקן בית' : 'שחקן רגיל'}
                     </td>

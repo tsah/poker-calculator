@@ -122,8 +122,26 @@ export function calculateSettlements(
         });
       });
     });
-
   }
+
+  // Add shared expense settlements
+  const totalPlayers = players.length;
+  players.forEach((payer) => {
+    if (payer.expenses && payer.expenses > 0) {
+      const sharePerPlayer = payer.expenses / totalPlayers;
+      players.forEach((player) => {
+        if (player.name !== payer.name) {
+          allSettlements.push({
+            from: player.name,
+            to: payer.name,
+            amount: Number(sharePerPlayer.toFixed(2)),
+            reason: SettlementReason.SHARED_EXPENSE,
+          });
+        }
+      });
+    }
+  });
+
   const result = combineSettlements(allSettlements);
   return result;
 }
