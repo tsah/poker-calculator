@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { calculateSettlements, type Player, type Settlement } from './utils/settlements'
+import { calculateSettlements } from './utils/settlements'
+import {type Player, type CombinedSettlement} from './utils/types/settlement'
 
 function App() {
   const [players, setPlayers] = useState<Player[]>([])
@@ -11,7 +12,7 @@ function App() {
     isHouse: false
   })
   const [houseFee, setHouseFee] = useState(0)
-  const [settlements, setSettlements] = useState<Settlement[]>([])
+  const [settlements, setSettlements] = useState<CombinedSettlement[]>([])
 
   const addPlayer = () => {
     if (newPlayer.name.trim() === '') return
