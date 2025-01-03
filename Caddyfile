@@ -1,0 +1,21 @@
+{
+    email tsah.weiss@gmail.com
+}
+
+poker.tsah.link {
+    tls {
+        protocols tls1.2 tls1.3
+    }
+    root * /srv
+    encode gzip
+    file_server
+    try_files {path} /index.html
+    
+    header {
+        X-Frame-Options "SAMEORIGIN"
+        X-XSS-Protection "1; mode=block"
+        X-Content-Type-Options "nosniff"
+        Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+        Cache-Control "public, max-age=3600"
+    }
+} 
