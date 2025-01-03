@@ -10,7 +10,7 @@ docker rm -f poker-calculator || true
 docker run -d \
   --name poker-calculator \
   --restart unless-stopped \
-  -p 80:80 \
+  --cap-add=NET_BIND_SERVICE \
   -p 443:443 \
   -v caddy_data:/data \
   -v caddy_config:/config \
