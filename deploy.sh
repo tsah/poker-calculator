@@ -1,13 +1,13 @@
 #!/bin/bash
 
 # Build the new image
-docker build -t poker-calculator .
+sudo docker build -t poker-calculator .
 
 # Stop and remove the old container if it exists
-docker rm -f poker-calculator || true
+sudo docker rm -f poker-calculator || true
 
 # Start the new container
-docker run -d \
+sudo docker run -d \
   --name poker-calculator \
   --restart unless-stopped \
   --cap-add=NET_BIND_SERVICE \
@@ -19,4 +19,4 @@ docker run -d \
   poker-calculator
 
 # Clean up unused images
-docker image prune -f 
+sudo docker image prune -f 
