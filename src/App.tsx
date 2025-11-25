@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { calculateSettlements } from './utils/settlements'
-import {type Player, type CombinedSettlement} from './utils/types/settlement'
+import {type Player, type SettlementResult} from './utils/types/settlement'
 
 function App() {
   const [players, setPlayers] = useState<Player[]>([])
@@ -13,7 +13,7 @@ function App() {
     expenses: 0
   })
   const [houseFee, setHouseFee] = useState(0)
-  const [settlements, setSettlements] = useState<CombinedSettlement[]>([])
+  const [settlementResult, setSettlementResult] = useState<SettlementResult | null>(null)
 
   const addPlayer = () => {
     if (newPlayer.name.trim() === '') return
@@ -26,17 +26,22 @@ function App() {
       isHouse: false,
       expenses: 0
     })
-    setSettlements([]) // Reset settlements when adding a new player
+    setSettlementResult(null) // Reset settlements when adding a new player
   }
 
   const removePlayer = (id: number) => {
     setPlayers(players.filter(player => player.id !== id))
-    setSettlements([]) // Reset settlements when removing a player
+    setSettlementResult(null) // Reset settlements when removing a player
   }
 
-  const handleCalculateSettlements = () => {
-    setSettlements(calculateSettlements(players, houseFee))
-  }
+  // Auto-calculate settlements when players or house fee changes
+  useEffect(() => {
+    if (players.length > 0) {
+      setSettlementResult(calculateSettlements(players, houseFee))
+    } else {
+      setSettlementResult(null)
+    }
+  }, [players, houseFee])
 
   const getBreakdownText = (reason: 'house_fee' | 'game_balance' | 'shared_expense') => {
     switch (reason) {
@@ -169,41 +174,57 @@ function App() {
               </tbody>
             </table>
           </div>
-          {players.length > 0 && (
-            <button
-              onClick={handleCalculateSettlements}
-              className="mt-4 bg-emerald-600 text-white px-6 py-2 rounded font-semibold hover:bg-emerald-500 transition-colors"
-            >
-              חשב התחשבנות
-            </button>
-          )}
+
         </div>
 
         {/* Settlements */}
-        {settlements.length > 0 && (
+        {settlementResult && (
           <div className="bg-[#133529] p-6 rounded-lg shadow-xl border border-[#ffd700]/20">
             <h2 className="text-xl font-semibold mb-4 text-[#ffd700]">התחשבנות</h2>
-            <div className="space-y-4">
-              {settlements.map((settlement, index) => (
-                <div key={index} className="bg-[#0c231c] rounded border border-[#ffd700]/10">
-                  <div className="p-3 border-b border-[#ffd700]/10">
-                    <span className="font-medium text-red-400">{settlement.from}</span>
-                    {' משלם ל'}
-                    <span className="font-medium text-emerald-400">{settlement.to}</span>
-                    {' סה״כ '}
-                    <span className="font-medium text-[#ffd700]">₪{settlement.amount}</span>
+            
+            {/* Unaccounted Money Message */}
+            {settlementResult.unaccountedMoney.type !== 'balanced' && (
+              <div className={`mb-4 p-4 rounded-lg border ${
+                settlementResult.unaccountedMoney.type === 'missing' 
+                  ? 'bg-red-900/20 border-red-500/30 text-red-300' 
+                  : 'bg-yellow-900/20 border-yellow-500/30 text-yellow-300'
+              }`}>
+                <p className="font-medium">{settlementResult.unaccountedMoney.description}</p>
+                <p className="text-sm mt-1">לא ניתן לחשב התחשבנות כאשר הכסף אינו מאוזן</p>
+              </div>
+            )}
+
+            {/* Settlements List */}
+            {settlementResult.settlements.length > 0 && (
+              <div className="space-y-4">
+                {settlementResult.settlements.map((settlement, index) => (
+                  <div key={index} className="bg-[#0c231c] rounded border border-[#ffd700]/10">
+                    <div className="p-3 border-b border-[#ffd700]/10">
+                      <span className="font-medium text-red-400">{settlement.from}</span>
+                      {' משלם ל'}
+                      <span className="font-medium text-emerald-400">{settlement.to}</span>
+                      {' סה״כ '}
+                      <span className="font-medium text-[#ffd700]">₪{settlement.amount}</span>
+                    </div>
+                    <div className="p-3 space-y-1 text-sm">
+                      {settlement.breakdown.map((item, idx) => (
+                        <div key={idx} className="flex justify-between text-gray-300">
+                          <span>{getBreakdownText(item.reason)}</span>
+                          <span>₪{item.amount}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <div className="p-3 space-y-1 text-sm">
-                    {settlement.breakdown.map((item, idx) => (
-                      <div key={idx} className="flex justify-between text-gray-300">
-                        <span>{getBreakdownText(item.reason)}</span>
-                        <span>₪{item.amount}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+
+            {/* Balanced Message */}
+            {settlementResult.unaccountedMoney.type === 'balanced' && settlementResult.settlements.length === 0 && (
+              <div className="text-center text-gray-400 py-8">
+                <p>החשבונות מאוזנים - אין צורך בהעברות כספים</p>
+              </div>
+            )}
           </div>
         )}
       </div>

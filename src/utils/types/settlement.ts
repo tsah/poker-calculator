@@ -31,3 +31,14 @@ export interface Player {
   isHouse?: boolean;
   expenses?: number;
 }
+
+export interface UnaccountedMoney {
+  amount: number;
+  type: 'missing' | 'excess' | 'balanced';
+  description: string;
+}
+
+export interface SettlementResult {
+  settlements: CombinedSettlement[];
+  unaccountedMoney: UnaccountedMoney;
+}

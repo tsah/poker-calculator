@@ -3,6 +3,8 @@ import {
   BaseSettlement,
   CombinedSettlement,
   Player,
+  SettlementResult,
+  UnaccountedMoney,
 } from "./types/settlement";
 
 // Helper function to create a consistent key for settlements
@@ -62,10 +64,32 @@ export function combineSettlements(
     .filter((settlement) => Math.abs(settlement.amount) > 0.01);
 }
 
+function createUnaccountedMoney(amount: number): UnaccountedMoney {
+  if (amount > 0) {
+    return {
+      amount,
+      type: 'missing',
+      description: `חסרים ₪${amount.toFixed(2)} כדי לאזן את החשבונות`,
+    };
+  } else if (amount < 0) {
+    return {
+      amount: Math.abs(amount),
+      type: 'excess',
+      description: `יש עודף של ₪${Math.abs(amount).toFixed(2)} שלא ניתן לחלק`,
+    };
+  } else {
+    return {
+      amount: 0,
+      type: 'balanced',
+      description: 'החשבונות מאוזנים',
+    };
+  }
+}
+
 export function calculateSettlements(
   players: Player[],
   houseFee: number,
-): CombinedSettlement[] {
+): SettlementResult {
   const allSettlements: BaseSettlement[] = [];
   const housePlayers = players.filter((p) => p.isHouse);
   const regularPlayers = players.filter((p) => !p.isHouse);
@@ -142,6 +166,23 @@ export function calculateSettlements(
     }
   });
 
+  // Calculate total money balance - only actual cash flow matters
+  const totalBuyIns = players.reduce((sum, p) => sum + p.buyIn, 0);
+  const totalCashOuts = players.reduce((sum, p) => sum + p.cashOut, 0);
+  const totalBalance = totalBuyIns - totalCashOuts;
+
+  // If money is unaccounted for, return empty settlements
+  if (Math.abs(totalBalance) > 0.01) {
+    return {
+      settlements: [],
+      unaccountedMoney: createUnaccountedMoney(totalBalance),
+    };
+  }
+
+  // Otherwise, calculate settlements normally
   const result = combineSettlements(allSettlements);
-  return result;
+  return {
+    settlements: result,
+    unaccountedMoney: createUnaccountedMoney(0),
+  };
 }

@@ -9,14 +9,15 @@ describe("calculateSettlements", () => {
       { id: 2, name: "B", buyIn: 100, cashOut: 120 },
     ];
 
-    const settlements = calculateSettlements(players, 0);
-    expect(settlements).toHaveLength(1);
-    expect(settlements[0]).toEqual({
+    const result = calculateSettlements(players, 0);
+    expect(result.settlements).toHaveLength(1);
+    expect(result.settlements[0]).toEqual({
       from: "A",
       to: "B",
       amount: 20,
       breakdown: [{ amount: 20, reason: "game_balance" }],
     });
+    expect(result.unaccountedMoney.type).toBe('balanced');
   });
 
   it("should handle game with house player and fee", () => {
@@ -25,9 +26,9 @@ describe("calculateSettlements", () => {
       { id: 2, name: "B", buyIn: 30, cashOut: 60 },
     ];
 
-    const settlements = calculateSettlements(players, 10);
-    expect(settlements).toHaveLength(1);
-    expect(settlements[0]).toEqual({
+    const result = calculateSettlements(players, 10);
+    expect(result.settlements).toHaveLength(1);
+    expect(result.settlements[0]).toEqual({
       from: "A",
       to: "B",
       amount: 20,
@@ -36,6 +37,7 @@ describe("calculateSettlements", () => {
         { amount: -10, reason: "house_fee" },
       ],
     });
+    expect(result.unaccountedMoney.type).toBe('balanced');
   });
 
   it("should handle multiple regular players with house fee", () => {
@@ -45,15 +47,15 @@ describe("calculateSettlements", () => {
       { id: 3, name: "B", buyIn: 100, cashOut: 120 },
     ];
 
-    const settlements = calculateSettlements(players, 10);
-    const result = settlements.sort((a, b) =>
+    const result = calculateSettlements(players, 10);
+    const sortedSettlements = result.settlements.sort((a, b) =>
       a.from === b.from
         ? a.to.localeCompare(b.to)
         : a.from.localeCompare(b.from),
     );
 
-    expect(settlements).toHaveLength(3);
-    expect(result).toEqual([
+    expect(result.settlements).toHaveLength(3);
+    expect(sortedSettlements).toEqual([
       {
         from: "A",
         to: "B",
@@ -83,15 +85,15 @@ describe("calculateSettlements", () => {
       { id: 4, name: "B", buyIn: 100, cashOut: 120 },
     ];
 
-    const settlements = calculateSettlements(players, 10);
-    const result = settlements.sort((a, b) =>
+    const result = calculateSettlements(players, 10);
+    const sortedSettlements = result.settlements.sort((a, b) =>
       a.from === b.from
         ? a.to.localeCompare(b.to)
         : a.from.localeCompare(b.from),
     );
 
-    expect(settlements).toHaveLength(5);
-    expect(result).toEqual([
+    expect(result.settlements).toHaveLength(5);
+    expect(sortedSettlements).toEqual([
       {
         from: "A",
         to: "B",
@@ -134,7 +136,34 @@ describe("calculateSettlements", () => {
     // A wins 10 from House in game balance
     // A pays 10 to House in house fee
     // Net result should be no settlements
-    const settlements = calculateSettlements(players, 10);
-    expect(settlements).toHaveLength(0);
+    const result = calculateSettlements(players, 10);
+    expect(result.settlements).toHaveLength(0);
+    expect(result.unaccountedMoney.type).toBe('balanced');
+  });
+
+  it("should return empty settlements when there is excess money", () => {
+    const players: Player[] = [
+      { id: 1, name: "A", buyIn: 100, cashOut: 150 },
+      { id: 2, name: "B", buyIn: 100, cashOut: 100 },
+    ];
+
+    const result = calculateSettlements(players, 0);
+    expect(result.settlements).toHaveLength(0);
+    expect(result.unaccountedMoney.type).toBe('excess');
+    expect(result.unaccountedMoney.amount).toBe(50);
+    expect(result.unaccountedMoney.description).toBe('יש עודף של ₪50.00 שלא ניתן לחלק');
+  });
+
+  it("should return empty settlements when there is missing money", () => {
+    const players: Player[] = [
+      { id: 1, name: "A", buyIn: 100, cashOut: 50 },
+      { id: 2, name: "B", buyIn: 100, cashOut: 100 },
+    ];
+
+    const result = calculateSettlements(players, 0);
+    expect(result.settlements).toHaveLength(0);
+    expect(result.unaccountedMoney.type).toBe('missing');
+    expect(result.unaccountedMoney.amount).toBe(50);
+    expect(result.unaccountedMoney.description).toBe('חסרים ₪50.00 כדי לאזן את החשבונות');
   });
 });
