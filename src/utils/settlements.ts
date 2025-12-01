@@ -85,7 +85,7 @@ function createUnaccountedMoney(amount: number): UnaccountedMoney {
   }
 }
 
-function getBaseSettlements(
+export function getBaseSettlements(
   players: Player[],
   houseFee: number,
 ): BaseSettlement[] {

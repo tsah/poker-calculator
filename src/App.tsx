@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
-import { calculateSettlements, calculateGross } from './utils/settlements'
-import {type Player, type SettlementResult} from './utils/types/settlement'
+import { calculateSettlements, calculateGross, getBaseSettlements } from './utils/settlements'
+import {type Player, type SettlementResult, SettlementReason} from './utils/types/settlement'
 
 function App() {
   const [players, setPlayers] = useState<Player[]>([])
@@ -43,6 +43,24 @@ function App() {
 
   // Calculate gross for each player
   const playerGrosses = useMemo(() => calculateGross(players, houseFee), [players, houseFee]);
+
+  // Calculate breakdowns for each player
+  const playerBreakdowns = useMemo(() => {
+    const breakdowns: Map<string, { game_balance: number, house_fee: number, shared_expense: number }> = new Map();
+    players.forEach(p => {
+      breakdowns.set(p.name, { game_balance: p.cashOut - p.buyIn, house_fee: 0, shared_expense: 0 });
+    });
+    const baseSettlements = getBaseSettlements(players, houseFee);
+    baseSettlements.forEach(s => {
+      if (s.reason !== SettlementReason.GAME_BALANCE) {
+        const currentTo = breakdowns.get(s.to)!;
+        currentTo[s.reason] += s.amount;
+        const currentFrom = breakdowns.get(s.from)!;
+        currentFrom[s.reason] -= s.amount;
+      }
+    });
+    return breakdowns;
+  }, [players, houseFee]);
 
   // Auto-calculate settlements when players or house fee changes
   useEffect(() => {
@@ -277,10 +295,46 @@ function App() {
                   </div>
                 ))}
               </div>
-            )}
+             )}
 
-            {/* Balanced Message */}
-            {settlementResult.unaccountedMoney.type === 'balanced' && settlementResult.settlements.length === 0 && (
+             {/* Player Breakdown */}
+             {settlementResult.settlements.length > 0 && (
+               <div className="mt-8">
+                 <h3 className="text-lg font-semibold mb-4 text-[#ffd700]">סיכום לשחקנים</h3>
+                 <div className="space-y-4">
+                   {players.map(player => {
+                     const gross = playerGrosses.get(player.name) || 0;
+                     const breakdown = playerBreakdowns.get(player.name)!;
+                     return (
+                       <div key={player.id} className="bg-[#0c231c] rounded border border-[#ffd700]/10">
+                         <div className="p-3 border-b border-[#ffd700]/10">
+                           <span className="font-medium text-[#ffd700]">{player.name}</span>
+                           {' סה״כ '}
+                           <span className={`font-medium ${gross >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>₪{gross.toFixed(2)}</span>
+                         </div>
+                         <div className="p-3 space-y-1 text-sm">
+                           <div className="flex justify-between text-gray-300">
+                             <span>{getBreakdownText('game_balance')}</span>
+                             <span>₪{breakdown.game_balance.toFixed(2)}</span>
+                           </div>
+                           <div className="flex justify-between text-gray-300">
+                             <span>{getBreakdownText('house_fee')}</span>
+                             <span>₪{breakdown.house_fee.toFixed(2)}</span>
+                           </div>
+                           <div className="flex justify-between text-gray-300">
+                             <span>{getBreakdownText('shared_expense')}</span>
+                             <span>₪{breakdown.shared_expense.toFixed(2)}</span>
+                           </div>
+                         </div>
+                       </div>
+                     );
+                   })}
+                 </div>
+               </div>
+             )}
+
+             {/* Balanced Message */}
+             {settlementResult.unaccountedMoney.type === 'balanced' && settlementResult.settlements.length === 0 && (
               <div className="text-center text-gray-400 py-8">
                 <p>החשבונות מאוזנים - אין צורך בהעברות כספים</p>
               </div>
