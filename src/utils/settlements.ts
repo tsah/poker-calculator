@@ -85,10 +85,10 @@ function createUnaccountedMoney(amount: number): UnaccountedMoney {
   }
 }
 
-export function calculateSettlements(
+function getBaseSettlements(
   players: Player[],
   houseFee: number,
-): SettlementResult {
+): BaseSettlement[] {
   const allSettlements: BaseSettlement[] = [];
   const housePlayers = players.filter((p) => p.isHouse);
   const regularPlayers = players.filter((p) => !p.isHouse);
@@ -164,6 +164,31 @@ export function calculateSettlements(
       });
     }
   });
+
+  return allSettlements;
+}
+
+export function calculateBruto(
+  players: Player[],
+  houseFee: number,
+): Map<string, number> {
+  const brutMap = new Map<string, number>();
+  players.forEach(p => brutMap.set(p.name, p.cashOut - p.buyIn));
+  const baseSettlements = getBaseSettlements(players, houseFee);
+  baseSettlements.forEach(s => {
+    if (s.reason !== SettlementReason.GAME_BALANCE) {
+      brutMap.set(s.to, (brutMap.get(s.to) || 0) + s.amount);
+      brutMap.set(s.from, (brutMap.get(s.from) || 0) - s.amount);
+    }
+  });
+  return brutMap;
+}
+
+export function calculateSettlements(
+  players: Player[],
+  houseFee: number,
+): SettlementResult {
+  const allSettlements = getBaseSettlements(players, houseFee);
 
   // Calculate total money balance - only actual cash flow matters
   const totalBuyIns = players.reduce((sum, p) => sum + p.buyIn, 0);

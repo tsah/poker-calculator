@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { calculateSettlements } from './utils/settlements'
+import { useState, useEffect, useMemo } from 'react'
+import { calculateSettlements, calculateBruto } from './utils/settlements'
 import {type Player, type SettlementResult} from './utils/types/settlement'
 
 function App() {
@@ -40,6 +40,9 @@ function App() {
     ))
     setSettlementResult(null) // Reset settlements when updating a player
   }
+
+  // Calculate bruto for each player
+  const playerBrutos = useMemo(() => calculateBruto(players, houseFee), [players, houseFee]);
 
   // Auto-calculate settlements when players or house fee changes
   useEffect(() => {
@@ -144,13 +147,14 @@ function App() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#ffd700]/20">
-                  <th className="text-right p-2 text-[#ffd700]">שם</th>
-                  <th className="text-right p-2 text-[#ffd700]">קנייה</th>
-                  <th className="text-right p-2 text-[#ffd700]">יציאה</th>
-                  <th className="text-right p-2 text-[#ffd700]">נטו</th>
-                  <th className="text-right p-2 text-[#ffd700]">הוצאות</th>
-                  <th className="text-right p-2 text-[#ffd700]">פוג</th>
-                  <th className="text-right p-2 text-[#ffd700]">פעולה</th>
+                   <th className="text-right p-2 text-[#ffd700]">שם</th>
+                   <th className="text-right p-2 text-[#ffd700]">קנייה</th>
+                   <th className="text-right p-2 text-[#ffd700]">יציאה</th>
+                   <th className="text-right p-2 text-[#ffd700]">נטו</th>
+                   <th className="text-right p-2 text-[#ffd700]">ברוטו</th>
+                   <th className="text-right p-2 text-[#ffd700]">הוצאות</th>
+                   <th className="text-right p-2 text-[#ffd700]">פוג</th>
+                   <th className="text-right p-2 text-[#ffd700]">פעולה</th>
                 </tr>
               </thead>
               <tbody>
@@ -180,19 +184,24 @@ function App() {
                          className="w-full p-1 rounded bg-[#0c231c] border border-[#ffd700]/20 text-white focus:outline-none focus:border-[#ffd700]"
                        />
                      </td>
-                     <td className="p-2">
-                       <span className={player.cashOut - player.buyIn >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                         ₪{(player.cashOut - player.buyIn).toFixed(2)}
-                       </span>
-                     </td>
-                     <td className="p-2">
-                       <input
-                         type="number"
-                         value={player.expenses || ''}
-                         onChange={(e) => updatePlayer(player.id, 'expenses', Number(e.target.value))}
-                         className="w-full p-1 rounded bg-[#0c231c] border border-[#ffd700]/20 text-white focus:outline-none focus:border-[#ffd700]"
-                       />
-                     </td>
+                      <td className="p-2">
+                        <span className={player.cashOut - player.buyIn >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                          ₪{(player.cashOut - player.buyIn).toFixed(2)}
+                        </span>
+                      </td>
+                      <td className="p-2">
+                        <span className={(playerBrutos.get(player.name) || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                          ₪{(playerBrutos.get(player.name) || 0).toFixed(2)}
+                        </span>
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="number"
+                          value={player.expenses || ''}
+                          onChange={(e) => updatePlayer(player.id, 'expenses', Number(e.target.value))}
+                          className="w-full p-1 rounded bg-[#0c231c] border border-[#ffd700]/20 text-white focus:outline-none focus:border-[#ffd700]"
+                        />
+                      </td>
                      <td className="p-2">
                        <div className="flex items-center gap-2">
                          <input
