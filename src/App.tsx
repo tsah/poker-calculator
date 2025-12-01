@@ -15,6 +15,8 @@ function App() {
   const [houseFee, setHouseFee] = useState(0)
   const [settlementResult, setSettlementResult] = useState<SettlementResult | null>(null)
 
+  const formatCurrency = (amount: number) => <span dir="ltr">{amount < 0 ? '-' : ''}{Math.abs(amount).toFixed(2)}₪</span>
+
   const addPlayer = () => {
     if (newPlayer.name.trim() === '') return
     setPlayers([...players, { ...newPlayer, id: Date.now() }])
@@ -204,12 +206,12 @@ function App() {
                      </td>
                       <td className="p-2">
                         <span className={player.cashOut - player.buyIn >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                          ₪{(player.cashOut - player.buyIn).toFixed(2)}
+                          {formatCurrency(player.cashOut - player.buyIn)}
                         </span>
                       </td>
                       <td className="p-2">
                         <span className={(playerGrosses.get(player.name) || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                          ₪{(playerGrosses.get(player.name) || 0).toFixed(2)}
+                          {formatCurrency(playerGrosses.get(player.name) || 0)}
                         </span>
                       </td>
                       <td className="p-2">
@@ -280,16 +282,16 @@ function App() {
                            {' משלם ל'}
                            <span className="font-medium text-emerald-400">{settlement.to}</span>
                            {' סה״כ '}
-                           <span className="font-medium text-[#ffd700]">₪{settlement.amount}</span>
+                            <span className="font-medium text-[#ffd700]">{formatCurrency(settlement.amount)}</span>
                          </>
                        )}
                      </div>
                     <div className="p-3 space-y-1 text-sm">
                       {settlement.breakdown.map((item, idx) => (
-                        <div key={idx} className="flex justify-between text-gray-300">
-                          <span>{getBreakdownText(item.reason)}</span>
-                          <span>₪{item.amount}</span>
-                        </div>
+                         <div key={idx} className="flex justify-between text-gray-300">
+                           <span>{getBreakdownText(item.reason)}</span>
+                           <span>{formatCurrency(item.amount)}</span>
+                         </div>
                       ))}
                     </div>
                   </div>
@@ -310,20 +312,20 @@ function App() {
                          <div className="p-3 border-b border-[#ffd700]/10">
                            <span className="font-medium text-[#ffd700]">{player.name}</span>
                            {' סה״כ '}
-                           <span className={`font-medium ${gross >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>₪{gross.toFixed(2)}</span>
+                           <span className={`font-medium ${gross >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatCurrency(gross)}</span>
                          </div>
                          <div className="p-3 space-y-1 text-sm">
                            <div className="flex justify-between text-gray-300">
                              <span>{getBreakdownText('game_balance')}</span>
-                             <span>₪{breakdown.game_balance.toFixed(2)}</span>
+                             <span>{formatCurrency(breakdown.game_balance)}</span>
                            </div>
                            <div className="flex justify-between text-gray-300">
                              <span>{getBreakdownText('house_fee')}</span>
-                             <span>₪{breakdown.house_fee.toFixed(2)}</span>
+                             <span>{formatCurrency(breakdown.house_fee)}</span>
                            </div>
                            <div className="flex justify-between text-gray-300">
                              <span>{getBreakdownText('shared_expense')}</span>
-                             <span>₪{breakdown.shared_expense.toFixed(2)}</span>
+                             <span>{formatCurrency(breakdown.shared_expense)}</span>
                            </div>
                          </div>
                        </div>
