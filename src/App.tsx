@@ -34,6 +34,13 @@ function App() {
     setSettlementResult(null) // Reset settlements when removing a player
   }
 
+  const updatePlayer = (id: number, field: keyof Player, value: string | number | boolean) => {
+    setPlayers(players.map(player => 
+      player.id === id ? { ...player, [field]: value } : player
+    ))
+    setSettlementResult(null) // Reset settlements when updating a player
+  }
+
   // Auto-calculate settlements when players or house fee changes
   useEffect(() => {
     if (players.length > 0) {
@@ -147,30 +154,68 @@ function App() {
                 </tr>
               </thead>
               <tbody>
-                {players.map(player => (
-                  <tr key={player.id} className="border-b border-[#ffd700]/10">
-                    <td className="p-2 text-white">{player.name}</td>
-                    <td className="p-2 text-white">₪{player.buyIn}</td>
-                    <td className="p-2 text-white">₪{player.cashOut}</td>
-                    <td className="p-2">
-                      <span className={player.cashOut - player.buyIn >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                        ₪{(player.cashOut - player.buyIn).toFixed(2)}
-                      </span>
-                    </td>
-                    <td className="p-2 text-white">₪{player.expenses || 0}</td>
-                    <td className="p-2 text-white">
-                      {player.isHouse ? 'שחקן בית' : 'שחקן רגיל'}
-                    </td>
-                    <td className="p-2">
-                      <button
-                        onClick={() => removePlayer(player.id)}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        הסר
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                 {players.map(player => (
+                   <tr key={player.id} className="border-b border-[#ffd700]/10">
+                     <td className="p-2">
+                       <input
+                         type="text"
+                         value={player.name}
+                         onChange={(e) => updatePlayer(player.id, 'name', e.target.value)}
+                         className="w-full p-1 rounded bg-[#0c231c] border border-[#ffd700]/20 text-white focus:outline-none focus:border-[#ffd700]"
+                       />
+                     </td>
+                     <td className="p-2">
+                       <input
+                         type="number"
+                         value={player.buyIn || ''}
+                         onChange={(e) => updatePlayer(player.id, 'buyIn', Number(e.target.value))}
+                         className="w-full p-1 rounded bg-[#0c231c] border border-[#ffd700]/20 text-white focus:outline-none focus:border-[#ffd700]"
+                       />
+                     </td>
+                     <td className="p-2">
+                       <input
+                         type="number"
+                         value={player.cashOut || ''}
+                         onChange={(e) => updatePlayer(player.id, 'cashOut', Number(e.target.value))}
+                         className="w-full p-1 rounded bg-[#0c231c] border border-[#ffd700]/20 text-white focus:outline-none focus:border-[#ffd700]"
+                       />
+                     </td>
+                     <td className="p-2">
+                       <span className={player.cashOut - player.buyIn >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                         ₪{(player.cashOut - player.buyIn).toFixed(2)}
+                       </span>
+                     </td>
+                     <td className="p-2">
+                       <input
+                         type="number"
+                         value={player.expenses || ''}
+                         onChange={(e) => updatePlayer(player.id, 'expenses', Number(e.target.value))}
+                         className="w-full p-1 rounded bg-[#0c231c] border border-[#ffd700]/20 text-white focus:outline-none focus:border-[#ffd700]"
+                       />
+                     </td>
+                     <td className="p-2">
+                       <div className="flex items-center gap-2">
+                         <input
+                           type="checkbox"
+                           checked={player.isHouse || false}
+                           onChange={(e) => updatePlayer(player.id, 'isHouse', e.target.checked)}
+                           className="w-4 h-4 rounded border-[#ffd700]/20 bg-[#0c231c]"
+                         />
+                         <span className="text-white text-sm">
+                           {player.isHouse ? 'שחקן בית' : 'שחקן רגיל'}
+                         </span>
+                       </div>
+                     </td>
+                     <td className="p-2">
+                       <button
+                         onClick={() => removePlayer(player.id)}
+                         className="text-red-400 hover:text-red-300"
+                       >
+                         הסר
+                       </button>
+                     </td>
+                   </tr>
+                 ))}
               </tbody>
             </table>
           </div>
