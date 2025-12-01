@@ -2,7 +2,7 @@
     email tsah.weiss@gmail.com
 }
 
-poker.tsah.link {
+poker.tsah.site {
     tls {
         protocols tls1.2 tls1.3
     }
