@@ -60,8 +60,7 @@ export function combineSettlements(
           reason: s.reason,
         })),
       };
-    })
-    .filter((settlement) => Math.abs(settlement.amount) > 0.01);
+    });
 }
 
 function createUnaccountedMoney(amount: number): UnaccountedMoney {

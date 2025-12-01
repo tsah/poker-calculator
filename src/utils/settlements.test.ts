@@ -135,9 +135,18 @@ describe("calculateSettlements", () => {
 
     // A wins 10 from House in game balance
     // A pays 10 to House in house fee
-    // Net result should be no settlements
+    // Net result is 0, but show details
     const result = calculateSettlements(players, 10);
-    expect(result.settlements).toHaveLength(0);
+    expect(result.settlements).toHaveLength(1);
+    expect(result.settlements[0]).toEqual({
+      from: "House",
+      to: "A",
+      amount: 0,
+      breakdown: [
+        { amount: 10, reason: "game_balance" },
+        { amount: -10, reason: "house_fee" },
+      ],
+    });
     expect(result.unaccountedMoney.type).toBe('balanced');
   });
 

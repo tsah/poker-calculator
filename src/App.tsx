@@ -244,13 +244,19 @@ function App() {
               <div className="space-y-4">
                 {settlementResult.settlements.map((settlement, index) => (
                   <div key={index} className="bg-[#0c231c] rounded border border-[#ffd700]/10">
-                    <div className="p-3 border-b border-[#ffd700]/10">
-                      <span className="font-medium text-red-400">{settlement.from}</span>
-                      {' משלם ל'}
-                      <span className="font-medium text-emerald-400">{settlement.to}</span>
-                      {' סה״כ '}
-                      <span className="font-medium text-[#ffd700]">₪{settlement.amount}</span>
-                    </div>
+                     <div className="p-3 border-b border-[#ffd700]/10">
+                       {settlement.amount === 0 ? (
+                         <span className="font-medium text-[#ffd700]">{settlement.from} ו{settlement.to} מקוזזים</span>
+                       ) : (
+                         <>
+                           <span className="font-medium text-red-400">{settlement.from}</span>
+                           {' משלם ל'}
+                           <span className="font-medium text-emerald-400">{settlement.to}</span>
+                           {' סה״כ '}
+                           <span className="font-medium text-[#ffd700]">₪{settlement.amount}</span>
+                         </>
+                       )}
+                     </div>
                     <div className="p-3 space-y-1 text-sm">
                       {settlement.breakdown.map((item, idx) => (
                         <div key={idx} className="flex justify-between text-gray-300">
