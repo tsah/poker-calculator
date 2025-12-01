@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { calculateSettlements, calculateBruto } from "./settlements";
+import { calculateSettlements, calculateGross } from "./settlements";
 import { type Player } from "./types/settlement";
 
 describe("calculateSettlements", () => {
@@ -177,36 +177,36 @@ describe("calculateSettlements", () => {
   });
 });
 
-describe("calculateBruto", () => {
-  it("should calculate bruto for simple game", () => {
+describe("calculateGross", () => {
+  it("should calculate gross for simple game", () => {
     const players: Player[] = [
       { id: 1, name: "A", buyIn: 100, cashOut: 80 },
       { id: 2, name: "B", buyIn: 100, cashOut: 120 },
     ];
 
-    const result = calculateBruto(players, 0);
+    const result = calculateGross(players, 0);
     expect(result.get("A")).toBe(-20);
     expect(result.get("B")).toBe(20);
   });
 
-  it("should include house fee in bruto", () => {
+  it("should include house fee in gross", () => {
     const players: Player[] = [
       { id: 1, name: "House", buyIn: 0, cashOut: 0, isHouse: true },
       { id: 2, name: "A", buyIn: 100, cashOut: 110 },
     ];
 
-    const result = calculateBruto(players, 10);
+    const result = calculateGross(players, 10);
     expect(result.get("House")).toBe(10);
     expect(result.get("A")).toBe(0); // 10 - 10 = 0
   });
 
-  it("should include shared expenses in bruto", () => {
+  it("should include shared expenses in gross", () => {
     const players: Player[] = [
       { id: 1, name: "A", buyIn: 100, cashOut: 100, expenses: 30 },
       { id: 2, name: "B", buyIn: 100, cashOut: 100 },
     ];
 
-    const result = calculateBruto(players, 0);
+    const result = calculateGross(players, 0);
     expect(result.get("A")).toBe(15); // receives 15 from B
     expect(result.get("B")).toBe(-15); // pays 15 to A
   });

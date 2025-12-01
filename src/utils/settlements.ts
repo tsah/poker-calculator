@@ -168,7 +168,7 @@ function getBaseSettlements(
   return allSettlements;
 }
 
-export function calculateBruto(
+export function calculateGross(
   players: Player[],
   houseFee: number,
 ): Map<string, number> {

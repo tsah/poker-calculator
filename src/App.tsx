@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { calculateSettlements, calculateBruto } from './utils/settlements'
+import { calculateSettlements, calculateGross } from './utils/settlements'
 import {type Player, type SettlementResult} from './utils/types/settlement'
 
 function App() {
@@ -41,8 +41,8 @@ function App() {
     setSettlementResult(null) // Reset settlements when updating a player
   }
 
-  // Calculate bruto for each player
-  const playerBrutos = useMemo(() => calculateBruto(players, houseFee), [players, houseFee]);
+  // Calculate gross for each player
+  const playerGrosses = useMemo(() => calculateGross(players, houseFee), [players, houseFee]);
 
   // Auto-calculate settlements when players or house fee changes
   useEffect(() => {
@@ -190,8 +190,8 @@ function App() {
                         </span>
                       </td>
                       <td className="p-2">
-                        <span className={(playerBrutos.get(player.name) || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}>
-                          ₪{(playerBrutos.get(player.name) || 0).toFixed(2)}
+                        <span className={(playerGrosses.get(player.name) || 0) >= 0 ? 'text-emerald-400' : 'text-red-400'}>
+                          ₪{(playerGrosses.get(player.name) || 0).toFixed(2)}
                         </span>
                       </td>
                       <td className="p-2">
